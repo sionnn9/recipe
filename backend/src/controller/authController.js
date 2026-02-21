@@ -4,6 +4,7 @@ import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 import cookies from "cookie-parser";
 dotenv.config();
+
 export async function registerUser(req, res) {
   try {
     const { name, email, password } = req.body;

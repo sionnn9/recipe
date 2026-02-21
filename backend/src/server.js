@@ -16,7 +16,7 @@ app.use((req, res, next) => {
 
 app.use("/api/auth", authRoutes);
 
-app.use("/api", uploadRoute);
+app.use("/api/ai", uploadRoute);
 
 connectDB().then(() => {
   app.listen(PORT, () => {

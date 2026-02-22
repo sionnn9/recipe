@@ -58,7 +58,7 @@ export async function loginUser(req, res) {
     );
     res.cookie("token", token, {
       httpOnly: true,
-      secure: true, // Always true in production deployments
+      secure: false, // Always true in production deployments
       sameSite: "none", // Required for cross-domain
       maxAge: 24 * 60 * 60 * 1000,
     });

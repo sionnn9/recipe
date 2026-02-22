@@ -7,11 +7,12 @@ export const processImage = async (req, res) => {
     if (!req.file) {
       return res.status(400).json({ message: "No image uploaded" });
     }
-
+    // Convert the uploaded image to a base64 string to send to the Groq API
     const base64Image = req.file.buffer.toString("base64");
     const mimeType = req.file.mimetype;
 
     // Step 1: Identify fruits and vegetables from image
+    //using lama 4 scout for better vision capabilities and then using llama 3.3 for recipe generation since it is more cost effective for text generation tasks
     const visionResponse = await groq.chat.completions.create({
       model: "meta-llama/llama-4-scout-17b-16e-instruct",
       messages: [
@@ -44,6 +45,7 @@ export const processImage = async (req, res) => {
     }
 
     // Step 3: Generate 5 different recipes
+    //using llama 3.3 for recipe generation since it is more cost effective for text generation tasks and we dont need the advanced vision capabilities of llama 4 for this step
     const recipeResponse = await groq.chat.completions.create({
       model: "llama-3.3-70b-versatile",
       messages: [

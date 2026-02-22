@@ -4,11 +4,15 @@ import authRoutes from "./routes/authRoutes.js";
 import uploadRoute from "./routes/uploadRoute.js";
 import dotenv from "dotenv";
 import multer from "multer";
+import saveRecipieRoute from "./routes/saveRecipieRoute.js";
+import cookieParser from "cookie-parser";
+
 dotenv.config();
 const app = express();
 const PORT = process.env.Port || 5001;
 
 app.use(express.json());
+app.use(cookieParser());
 app.use((req, res, next) => {
   console.log(`req method ${req.method} and url is ${req.url}`);
   next();
@@ -17,6 +21,8 @@ app.use((req, res, next) => {
 app.use("/api/auth", authRoutes);
 
 app.use("/api/ai", uploadRoute);
+
+app.use("/api", saveRecipieRoute);
 
 connectDB().then(() => {
   app.listen(PORT, () => {

@@ -7,12 +7,11 @@ export const processImage = async (req, res) => {
     if (!req.file) {
       return res.status(400).json({ message: "No image uploaded" });
     }
-    // Convert the uploaded image to a base64 string to send to the Groq API
+
     const base64Image = req.file.buffer.toString("base64");
     const mimeType = req.file.mimetype;
 
-    // Step 1: Identify fruits and vegetables from image
-    //using lama 4 scout for better vision capabilities and then using llama 3.3 for recipe generation since it is more cost effective for text generation tasks
+    // Step 1: Identify ingredients
     const visionResponse = await groq.chat.completions.create({
       model: "meta-llama/llama-4-scout-17b-16e-instruct",
       messages: [
@@ -21,13 +20,11 @@ export const processImage = async (req, res) => {
           content: [
             {
               type: "image_url",
-              image_url: {
-                url: `data:${mimeType};base64,${base64Image}`,
-              },
+              image_url: { url: `data:${mimeType};base64,${base64Image}` },
             },
             {
               type: "text",
-              text: "List all the food ingredients you see in this image including vegetables, fruits, meat, fish, dairy, cheese, and any other food items. If there are none, respond with exactly 'NO_INGREDIENTS'. Just give me a comma separated list, nothing else.",
+              text: "List food ingredients you see. Comma separated list. If none, say 'NO_INGREDIENTS'.",
             },
           ],
         },
@@ -36,39 +33,55 @@ export const processImage = async (req, res) => {
 
     const detectedIngredients = visionResponse.choices[0].message.content;
 
-    // Step 2: Check if anything was detected
     if (detectedIngredients.includes("NO_INGREDIENTS")) {
-      return res.status(400).json({
-        message:
-          "No fruits or vegetables detected. Please upload a clearer image.",
-      });
+      return res.status(400).json({ message: "No food detected." });
     }
-
-    // Step 3: Generate 5 different recipes
-    //using llama 3.3 for recipe generation since it is more cost effective for text generation tasks and we dont need the advanced vision capabilities of llama 4 for this step
+    // Step 2 & 3: Generate Highly Detailed Structured JSON Recipes
     const recipeResponse = await groq.chat.completions.create({
       model: "llama-3.3-70b-versatile",
       messages: [
         {
+          role: "system",
+          content:
+            "You are a professional Michelin-star chef who outputs only valid JSON. You provide extremely detailed, professional instructions.",
+        },
+        {
           role: "user",
-          content: `Give me 5 different and unique recipes using these ingredients: ${detectedIngredients}. 
-          For each recipe include:
-          - Recipe name
-          - Ingredients with quantities
-          - Step by step instructions
+          content: `Generate 5 unique, gourmet recipes using these ingredients: ${detectedIngredients}. 
+          Return a JSON object with a key "recipeList" containing an array of 5 objects.
           
-          Separate each recipe clearly with a numbered heading like "Recipe 1:", "Recipe 2:", etc.`,
+          For the "instructions" array: 
+          - Provide at least 6-8 detailed steps per recipe.
+          - Include specific techniques (e.g., 'sauté until translucent', 'deglaze the pan', 'fold gently').
+          - Include approximate timing for steps (e.g., 'simmer for 10-12 minutes').
+          - Add a final 'Chef's Tip' as the last step in the instructions array.
+
+          JSON Structure:
+          {
+            "recipeList": [
+              {
+                "title": "String",
+                "ingredients": ["Quantity + Item", "Quantity + Item"],
+                "instructions": ["Detailed Step 1...", "Detailed Step 2...", "Chef's Tip: ..."],
+                "difficulty": "Easy/Medium/Hard",
+                "prepTime": "String (e.g. 15 mins)"
+              }
+            ]
+          }`,
         },
       ],
-      max_tokens: 2000,
+      response_format: { type: "json_object" },
+      max_tokens: 3500, // Increased tokens because the instructions are now longer/detailed
     });
 
-    const recipes = recipeResponse.choices[0].message.content;
-
+    const structuredData = JSON.parse(
+      recipeResponse.choices[0].message.content,
+    );
+    // Step 4: Final Response
     res.status(200).json({
       message: "Image processed successfully",
       ingredients: detectedIngredients,
-      recipes: recipes,
+      recipes: structuredData.recipeList, // This is now an array!
     });
   } catch (error) {
     console.log("Full error:", error);

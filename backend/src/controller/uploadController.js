@@ -26,7 +26,7 @@ export const processImage = async (req, res) => {
             },
             {
               type: "text",
-              text: "List only the fruits and vegetables you see in this image. If there are none, respond with exactly 'NO_INGREDIENTS'. Just give me a comma separated list, nothing else.",
+              text: "List all the food ingredients you see in this image including vegetables, fruits, meat, fish, dairy, cheese, and any other food items. If there are none, respond with exactly 'NO_INGREDIENTS'. Just give me a comma separated list, nothing else.",
             },
           ],
         },

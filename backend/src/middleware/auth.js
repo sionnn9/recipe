@@ -10,6 +10,8 @@ const authMiddleware = (req, res, next) => {
     req.user = decoded; // Attach decoded user info to the request object
     next();
   } catch (error) {
+    console.log("Cookies:", req.cookies);
+    console.log("Token:", req.cookies.token);
     return res.status(401).json({ message: "Unauthorized invalid token" });
   }
 };

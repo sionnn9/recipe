@@ -24,7 +24,7 @@ export const processImage = async (req, res) => {
             },
             {
               type: "text",
-              text: "List food ingredients you see. Comma separated list. If none, say 'NO_INGREDIENTS'.",
+              text: "List food items you see. Comma separated list. If none, say 'NO_INGREDIENTS'.",
             },
           ],
         },
@@ -80,7 +80,7 @@ export const processImage = async (req, res) => {
     // Step 4: Final Response
     res.status(200).json({
       message: "Image processed successfully",
-      ingredients: detectedIngredients,
+      items: detectedIngredients,
       recipes: structuredData.recipeList, // This is now an array!
     });
   } catch (error) {

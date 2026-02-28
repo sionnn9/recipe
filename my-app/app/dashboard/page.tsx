@@ -9,55 +9,16 @@ import { motion, AnimatePresence } from "framer-motion";
 import Navbar from "../components/navbar/page"; // adjust path if needed
 import "../components/home.css"; // reuse your existing styles
 import { error } from "console";
+import { u } from "framer-motion/client";
 
 // Mock recipe data (replace with real API)
 const mockRecipes = [
   {
     id: 1,
-    name: "Avocado & Broccoli Pasta",
-    time: "25 min",
+    title: "Avocado & Broccoli Pasta",
+    prepTime: "25 min",
     difficulty: "Easy",
     ingredients: ["🥑 Avocado", "🥦 Broccoli", "🍅 Tomato", "🍋 Lemon"],
-  },
-  {
-    id: 2,
-    name: "Garlic Butter Mushrooms",
-    time: "15 min",
-    difficulty: "Easy",
-    ingredients: ["🍄 Mushrooms", "🧄 Garlic", "🧈 Butter", "🌿 Parsley"],
-  },
-  {
-    id: 3,
-    name: "Spicy Thai Curry",
-    time: "35 min",
-    difficulty: "Medium",
-    ingredients: [
-      "🥥 Coconut milk",
-      "🍛 Curry paste",
-      "🥬 Veggies",
-      "🌶️ Chili",
-    ],
-  },
-  {
-    id: 4,
-    name: "Classic Pancakes",
-    time: "20 min",
-    difficulty: "Easy",
-    ingredients: ["🥚 Eggs", "🥛 Milk", "🌾 Flour", "🍯 Maple syrup"],
-  },
-  {
-    id: 5,
-    name: "Beef Stroganoff",
-    time: "45 min",
-    difficulty: "Hard",
-    ingredients: ["🥩 Beef", "🍄 Mushrooms", "🧅 Onion", "🥛 Sour cream"],
-  },
-  {
-    id: 6,
-    name: "Chocolate Lava Cake",
-    time: "30 min",
-    difficulty: "Medium",
-    ingredients: ["🍫 Chocolate", "🧈 Butter", "🥚 Eggs", "🍬 Sugar"],
   },
 ];
 
@@ -108,28 +69,34 @@ export default function DashboardPage() {
   });
 
   const handleUpload = async (files: File[]) => {
+    const formData = new FormData();
+    // Append the first file (assuming single file upload) with field name "file"
+    // (Make sure the field name matches what your backend expects – in your code it's likely "file")
+    formData.append("image", files[0]);
+    setUploading(true);
     try {
-      setUploading(true);
-      const resp = await fetch(`http://localhost:5001/api/ai/analyze`, {
+      const response = await fetch("http://localhost:5001/api/ai/analyze", {
         method: "POST",
-        body: JSON.stringify({ files: files.map((f) => f.name) }),
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
+        body: formData, // No Content-Type header; browser sets it automatically with boundary
+        credentials: "include", // Include cookies if your backend uses sessions
       });
-      if (!resp.ok) {
-        console.error("Upload failed:", resp.status, resp.statusText);
-        console.log("Upload failed");
-      } else {
-        console.log("Upload successful" + (await resp.text()));
-        // Simulate processing time
-        setTimeout(() => {
-          setRecipes(mockRecipes);
-          setUploading(false);
-        }, 3000);
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Upload failed");
+        setUploading(false);
       }
+
+      const data = await response.json();
+      console.log("Success:", data);
+      setUploading(false);
+      setRecipes(data.recipes || []);
+      // data.recipes will contain the generated recipes
+      return data;
     } catch (error) {
-      console.error("Error uploading files:", error);
-      alert("Failed to upload files. Please try again.");
+      console.error("Upload error:", error);
+      setUploading(false);
+      throw error;
     }
   };
 
@@ -234,7 +201,6 @@ export default function DashboardPage() {
             Snap a picture of your ingredients and let our AI chef work its
             magic.
           </p>
-
           {/* Upload Area – styled like your feature cards */}
           <div
             {...getRootProps()}
@@ -261,7 +227,6 @@ export default function DashboardPage() {
               </div>
             )}
           </div>
-
           {/* Loading animation */}
           <AnimatePresence>
             {uploading && (
@@ -303,7 +268,6 @@ export default function DashboardPage() {
               </motion.div>
             )}
           </AnimatePresence>
-
           {/* Recipe results */}
           <AnimatePresence>
             {recipes.length > 0 && !uploading && (
@@ -327,7 +291,7 @@ export default function DashboardPage() {
                 >
                   {recipes.map((recipe, index) => (
                     <motion.div
-                      key={recipe.id}
+                      key={index}
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: index * 0.1 }}
@@ -336,12 +300,12 @@ export default function DashboardPage() {
                       whileHover={{ y: -5 }}
                     >
                       <span className="feature-emoji">🍽️</span>
-                      <div className="feature-title">{recipe.name}</div>
+                      <div className="feature-title">{recipe.title}</div>
                       <p className="feature-desc">
                         <span
                           style={{ display: "block", marginBottom: "0.5rem" }}
                         >
-                          ⏲️ {recipe.time} · {recipe.difficulty}
+                          ⏲️ {recipe.prepTime} · {recipe.difficulty}
                         </span>
                         {recipe.ingredients.join(" · ")}
                       </p>
@@ -368,7 +332,6 @@ export default function DashboardPage() {
               </motion.div>
             )}
           </AnimatePresence>
-
           {/* Empty state */}
           {!uploading && recipes.length === 0 && files.length === 0 && (
             <p

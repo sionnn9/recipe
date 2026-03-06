@@ -3,9 +3,12 @@ import "../components/home.css";
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import Navbar from "../components/navbar/page";
+import Loginnav from "../components/loginnav/page";
+
 export default function HomePage() {
   const [scrollY, setScrollY] = useState(0);
   const [visible, setVisible] = useState<Set<string>>(new Set());
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const observerRef = useRef<IntersectionObserver | null>(null);
 
   useEffect(() => {
@@ -31,6 +34,25 @@ export default function HomePage() {
     });
 
     return () => observerRef.current?.disconnect();
+  }, []);
+
+  useEffect(() => {
+    const checkLogin = async () => {
+      const res = await fetch("http://localhost:5001/api/auth/checklogin", {
+        credentials: "include",
+      });
+
+      if (res.ok) {
+        setIsLoggedIn(true);
+        console.log("User is logged in");
+      } else {
+        setIsLoggedIn(false);
+        console.log(res.status);
+        console.log("User is not logged in");
+      }
+    };
+
+    checkLogin();
   }, []);
 
   const isVisible = (id: string) => visible.has(id);
@@ -108,7 +130,7 @@ export default function HomePage() {
         </div>
 
         {/* Nav */}
-        <Navbar />
+        {isLoggedIn ? <Loginnav /> : <Navbar />}
 
         {/* Hero */}
         <section className="hero">

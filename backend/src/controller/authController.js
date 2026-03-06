@@ -68,3 +68,11 @@ export async function loginUser(req, res) {
     res.status(500).json({ message: "Server error during login" });
   }
 }
+
+export async function logincheck(req, res) {
+  if (req.cookies.token) {
+    return res.json({ loggedIn: true });
+  }
+
+  res.status(401).json({ loggedIn: false });
+}

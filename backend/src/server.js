@@ -11,7 +11,13 @@ dotenv.config();
 const app = express();
 const PORT = process.env.Port || 5001;
 
-app.use(cors({ origin: "http://localhost:3000", credentials: true }));
+app.use(
+  cors({
+    origin: "http://localhost:3000",
+    credentials: true,
+    allowedHeaders: ["Content-Type", "Authorization"], // Make sure Authorization is allowed!
+  }),
+);
 app.use(express.json());
 app.use(cookieParser());
 app.use((req, res, next) => {

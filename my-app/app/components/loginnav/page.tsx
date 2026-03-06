@@ -18,14 +18,14 @@ const page = () => {
         FridgeChef
       </a>
       <div className="nav-links">
-        <a href="#how-it-works" className="nav-link">
-          How it works
-        </a>
-        <a href="#features" className="nav-link">
-          Features
-        </a>
-        <Link href="/login" className="nav-link nav-cta">
-          Get Started →
+        <Link href="/saved" className="nav-link nav-cta">
+          Your Saved Recipes
+        </Link>
+        <Link href="/dashboard" className="nav-link nav-cta">
+          Dashboard
+        </Link>
+        <Link href="/logout" className="nav-link nav-cta">
+          Logout icon u put profile thingy here
         </Link>
       </div>
     </nav>

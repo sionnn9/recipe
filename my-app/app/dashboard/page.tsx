@@ -6,10 +6,11 @@ import Link from "next/link";
 import Image from "next/image";
 import { useDropzone } from "react-dropzone";
 import { motion, AnimatePresence } from "framer-motion";
-import Navbar from "../components/navbar/page"; // adjust path if needed
+import Loginnav from "../components/loginnav/page"; // adjust path if needed
 import "../components/home.css"; // reuse your existing styles
 import { error } from "console";
 import { u } from "framer-motion/client";
+import { LikeComponent } from "../components/likecomp";
 
 // Mock recipe data (replace with real API)
 const mockRecipes = [
@@ -173,7 +174,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Navbar (reuse your component) */}
-      <Navbar />
+      <Loginnav />
 
       {/* Main dashboard content */}
       <section
@@ -296,11 +297,25 @@ export default function DashboardPage() {
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: index * 0.1 }}
                       className="feature-card"
-                      style={{ cursor: "pointer" }}
+                      style={{ cursor: "pointer", position: "relative" }} // Added relative positioning
                       whileHover={{ y: -5 }}
                     >
+                      {/* --- LIKE BUTTON COMPONENT --- */}
+                      <div
+                        style={{
+                          position: "absolute",
+                          top: "1rem",
+                          right: "1rem",
+                          zIndex: 10,
+                        }}
+                        onClick={(e) => e.stopPropagation()} // Important: stops the card click from firing when liking
+                      >
+                        <LikeComponent />
+                      </div>
+
                       <span className="feature-emoji">🍽️</span>
                       <div className="feature-title">{recipe.title}</div>
+
                       <p className="feature-desc">
                         <span
                           style={{ display: "block", marginBottom: "0.5rem" }}
@@ -309,6 +324,7 @@ export default function DashboardPage() {
                         </span>
                         {recipe.ingredients.join(" · ")}
                       </p>
+
                       <div
                         style={{
                           marginTop: "1rem",

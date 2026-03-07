@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+//import AvatarMenu from "../avatar/page";
 const page = () => {
   const [scrollY, setScrollY] = useState(0);
 
@@ -23,9 +24,6 @@ const page = () => {
         </Link>
         <Link href="/dashboard" className="nav-link nav-cta">
           Dashboard
-        </Link>
-        <Link href="/logout" className="nav-link nav-cta">
-          Logout icon u put profile thingy here
         </Link>
       </div>
     </nav>

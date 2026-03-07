@@ -60,7 +60,7 @@ export const processImage = async (req, res) => {
           {
             "recipeList": [
               {
-                "title": "String",
+                "recipeName": "String",
                 "ingredients": ["Quantity + Item", "Quantity + Item"],
                 "instructions": ["Detailed Step 1...", "Detailed Step 2...", "Chef's Tip: ..."],
                 "difficulty": "Easy/Medium/Hard",

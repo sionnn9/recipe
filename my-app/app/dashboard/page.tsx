@@ -15,11 +15,15 @@ import { LikeComponent } from "../components/likecomp";
 // Mock recipe data (replace with real API)
 const mockRecipes = [
   {
+    _id: "507f1f77bcf86cd799439011",
     id: 1,
-    title: "Avocado & Broccoli Pasta",
+    recipeName: "Avocado & Broccoli Pasta",
     prepTime: "25 min",
     difficulty: "Easy",
-    ingredients: ["🥑 Avocado", "🥦 Broccoli", "🍅 Tomato", "🍋 Lemon"],
+    ingredients: ["🥑 Avocado"],
+    instructions: [
+      "1. Cook pasta. 2. Blend avocado with lemon for sauce. 3. Sauté broccoli and tomatoes. 4. Toss everything together and serve!",
+    ],
   },
 ];
 
@@ -292,15 +296,15 @@ export default function DashboardPage() {
                 >
                   {recipes.map((recipe, index) => (
                     <motion.div
-                      key={index}
+                      key={recipe.id} // ✅ CHANGED: Use recipe.id instead of index
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: index * 0.1 }}
                       className="feature-card"
-                      style={{ cursor: "pointer", position: "relative" }} // Added relative positioning
+                      style={{ cursor: "pointer", position: "relative" }}
                       whileHover={{ y: -5 }}
                     >
-                      {/* --- LIKE BUTTON COMPONENT --- */}
+                      {/* Like Button */}
                       <div
                         style={{
                           position: "absolute",
@@ -308,13 +312,21 @@ export default function DashboardPage() {
                           right: "1rem",
                           zIndex: 10,
                         }}
-                        onClick={(e) => e.stopPropagation()} // Important: stops the card click from firing when liking
+                        onClick={(e) => e.stopPropagation()}
                       >
-                        <LikeComponent />
+                        <LikeComponent
+                          recipeId={recipe._id}
+                          recipeName={recipe.recipeName}
+                          ingredients={recipe.ingredients}
+                          prepTime={recipe.prepTime}
+                          difficulty={recipe.difficulty}
+                          instructions={recipe.instructions}
+                        />{" "}
+                        {/* ✅ ADDED: Pass recipe ID */}
                       </div>
 
                       <span className="feature-emoji">🍽️</span>
-                      <div className="feature-title">{recipe.title}</div>
+                      <div className="feature-title">{recipe.recipeName}</div>
 
                       <p className="feature-desc">
                         <span

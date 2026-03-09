@@ -9,6 +9,8 @@ export const LikeComponent = ({
   prepTime,
   difficulty,
   instructions,
+  isInitiallySaved = false,
+  onUnsave,
 }: {
   recipeId: string;
   recipeName: string;
@@ -16,52 +18,79 @@ export const LikeComponent = ({
   prepTime: string;
   difficulty: string;
   instructions: Array<string>;
+  isInitiallySaved?: boolean;
+  onUnsave?: () => void;
 }) => {
-  const [active, setActive] = useState(false);
+  const [active, setActive] = useState(isInitiallySaved);
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleSave = async () => {
+  const handleToggle = async () => {
     if (isLoading) return; // Prevent multiple clicks
 
     try {
       setIsLoading(true);
 
-      const res = await fetch("http://localhost:5001/api/save", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include", // ✅ Moved to correct place
-        body: JSON.stringify({
-          recipeId,
-          recipeName,
-          ingredients,
-          prepTime,
-          difficulty,
-          instructions,
-        }), // ✅ Use actual recipeId prop
-      });
+      if (active) {
+        // Unsave: call delete API
+        const res = await fetch(
+          `http://localhost:5001/api/delete/${recipeId}`,
+          {
+            method: "DELETE",
+            credentials: "include",
+          },
+        );
 
-      if (!res.ok) {
-        const error = await res.json();
-        throw new Error(error.message || "Failed to save recipe");
+        if (!res.ok) {
+          const error = await res.json();
+          throw new Error(error.message || "Failed to unsave recipe");
+        }
+
+        console.log("Recipe unsaved");
+        onUnsave?.(); // Call callback to remove from list
+      } else {
+        // Save: call save API
+        const res = await fetch("http://localhost:5001/api/save", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+          body: JSON.stringify({
+            recipeId,
+            recipeName,
+            ingredients,
+            prepTime,
+            difficulty,
+            instructions,
+          }),
+        });
+
+        if (!res.ok) {
+          const error = await res.json();
+          throw new Error(error.message || "Failed to save recipe");
+        }
+
+        const data = await res.json();
+        console.log("Recipe saved:", data);
       }
 
-      const data = await res.json();
-      console.log("Recipe saved:", data);
-
-      setActive(!active); // ✅ Toggle heart
+      setActive(!active); // Toggle heart
     } catch (error) {
-      console.error("Error saving recipe:", error);
-      alert("Failed to save recipe. Please try again.");
+      console.error("Error toggling save:", error);
+      alert("Failed to toggle save. Please try again.");
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div>
-      <Heart width={24} height={24} active={active} onClick={handleSave} />
+    <div
+      style={{
+        filter: active ? "drop-shadow(0 0 8px rgba(255, 0, 0, 0.8))" : "none",
+        transition: "filter 0.3s ease",
+      }}
+    >
+      <Heart width={24} height={24} active={active} onClick={handleToggle} />
     </div>
   );
 };

@@ -216,6 +216,12 @@ export default function DashboardPage() {
                           prepTime={recipe.prepTime}
                           difficulty={recipe.difficulty}
                           instructions={recipe.instructions}
+                          isInitiallySaved={true}
+                          onUnsave={() =>
+                            setRecipes(
+                              recipes.filter((r) => r._id !== recipe._id),
+                            )
+                          }
                         />
                       </div>
 

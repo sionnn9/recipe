@@ -24,9 +24,25 @@ const Page = () => {
     };
   }, [menuOpen]);
 
-  const handleSignOut = () => {
-    document.cookie = "token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-    router.push("/");
+  const handleSignOut = async () => {
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/auth/logout`,
+        {
+          method: "POST",
+          credentials: "include",
+        },
+      );
+
+      if (res.ok) {
+        localStorage.removeItem("dashboardRecipes"); // ✅ clean up
+        router.push("/login");
+      } else {
+        console.error("Failed to log out");
+      }
+    } catch (error) {
+      console.error("Logout error:", error);
+    }
   };
 
   return (

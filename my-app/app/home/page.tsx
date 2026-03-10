@@ -38,9 +38,12 @@ export default function HomePage() {
 
   useEffect(() => {
     const checkLogin = async () => {
-      const res = await fetch("http://localhost:5001/api/auth/checklogin", {
-        credentials: "include",
-      });
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/auth/checklogin`,
+        {
+          credentials: "include",
+        },
+      );
 
       if (res.ok) {
         setIsLoggedIn(true);

@@ -11,7 +11,7 @@ import "../components/home.css"; // reuse your existing styles
 import { error } from "console";
 import { u } from "framer-motion/client";
 import { LikeComponent } from "../components/likecomp";
-
+import { useRouter } from "next/dist/client/components/navigation";
 // Mock recipe data (replace with real API)
 const mockRecipes = [
   {
@@ -28,6 +28,8 @@ const mockRecipes = [
 ];
 
 export default function DashboardPage() {
+  const router = useRouter();
+
   const [scrollY, setScrollY] = useState(0);
   const [visible, setVisible] = useState<Set<string>>(new Set());
   const observerRef = useRef<IntersectionObserver | null>(null);
@@ -65,10 +67,13 @@ export default function DashboardPage() {
   useEffect(() => {
     const fetchSavedRecipes = async () => {
       try {
-        const response = await fetch("http://localhost:5001/api/my-recipes", {
-          method: "GET",
-          credentials: "include",
-        });
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/api/my-recipes`,
+          {
+            method: "GET",
+            credentials: "include",
+          },
+        );
 
         const data = await response.json(); // ✅ parse once
 
@@ -184,19 +189,17 @@ export default function DashboardPage() {
                 >
                   Found {recipes.length} recipes
                 </h2>
-                <div
-                  className="features"
-                  style={{ gridTemplateColumns: "repeat(3, 1fr)" }}
-                >
+                <div className="features">
                   {recipes.map((recipe, index) => (
                     <motion.div
-                      key={index}
+                      key={recipe._id || recipe.id || index}
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: index * 0.1 }}
                       className="feature-card"
                       style={{ cursor: "pointer", position: "relative" }} // Added relative positioning
                       whileHover={{ y: -5 }}
+                      onClick={() => router.push(`/recipe/${recipe._id}`)}
                     >
                       {/* --- LIKE BUTTON COMPONENT --- */}
                       <div

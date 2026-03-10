@@ -14,8 +14,11 @@ export async function saveRecipe(req, res) {
       instructions: instructions.join("\n"), // Join instructions array into a single string
     });
 
-    await recipe.save();
-    res.status(201).json({ message: "Recipe saved successfully" });
+    const savedRecipe = await recipe.save();
+    res.status(201).json({
+      message: "Recipe saved successfully",
+      recipeId: savedRecipe._id,
+    });
   } catch (error) {
     console.error("Error saving recipe:", error);
     res.status(500).json({ error: error.message });
@@ -55,6 +58,23 @@ export async function deleteRecipe(req, res) {
     res.status(200).json({ message: "Recipe deleted successfully" });
   } catch (error) {
     console.error("Error deleting recipe:", error);
+    res.status(500).json({ error: error.message });
+  }
+}
+
+export async function getRecipeById(req, res) {
+  try {
+    const { recipeId } = req.params;
+    const recipe = await Recipe.findOne({
+      _id: recipeId,
+      userId: req.user.userId, // Ensure user can only access their own recipes
+    });
+    if (!recipe) {
+      return res.status(404).json({ message: "Recipe not found" });
+    }
+    res.status(200).json(recipe);
+  } catch (error) {
+    console.error("Error fetching recipe:", error);
     res.status(500).json({ error: error.message });
   }
 }

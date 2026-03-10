@@ -1,7 +1,7 @@
 // app/dashboard/page.tsx
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { use, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useDropzone } from "react-dropzone";
@@ -11,7 +11,7 @@ import "../components/home.css"; // reuse your existing styles
 import { error } from "console";
 import { u } from "framer-motion/client";
 import { LikeComponent } from "../components/likecomp";
-
+import { useRouter } from "next/navigation";
 // Mock recipe data (replace with real API)
 const mockRecipes = [
   {
@@ -28,12 +28,32 @@ const mockRecipes = [
 ];
 
 export default function DashboardPage() {
+  const router = useRouter();
   const [scrollY, setScrollY] = useState(0);
   const [visible, setVisible] = useState<Set<string>>(new Set());
   const observerRef = useRef<IntersectionObserver | null>(null);
   const [files, setFiles] = useState<File[]>([]);
   const [uploading, setUploading] = useState(false);
   const [recipes, setRecipes] = useState<typeof mockRecipes>([]);
+
+  // Load recipes from localStorage on mount
+  useEffect(() => {
+    const savedRecipes = localStorage.getItem("dashboardRecipes");
+    if (savedRecipes) {
+      try {
+        setRecipes(JSON.parse(savedRecipes));
+      } catch (error) {
+        console.error("Error loading saved recipes:", error);
+      }
+    }
+  }, []);
+
+  // Save recipes to localStorage whenever recipes change
+  useEffect(() => {
+    if (recipes.length > 0) {
+      localStorage.setItem("dashboardRecipes", JSON.stringify(recipes));
+    }
+  }, [recipes]);
 
   useEffect(() => {
     const handleScroll = () => setScrollY(window.scrollY);
@@ -80,11 +100,14 @@ export default function DashboardPage() {
     formData.append("image", files[0]);
     setUploading(true);
     try {
-      const response = await fetch("http://localhost:5001/api/ai/analyze", {
-        method: "POST",
-        body: formData, // No Content-Type header; browser sets it automatically with boundary
-        credentials: "include", // Include cookies if your backend uses sessions
-      });
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/ai/analyze`,
+        {
+          method: "POST",
+          body: formData, // No Content-Type header; browser sets it automatically with boundary
+          credentials: "include", // Include cookies if your backend uses sessions
+        },
+      );
 
       if (!response.ok) {
         const errorData = await response.json();
@@ -290,19 +313,29 @@ export default function DashboardPage() {
                 >
                   Found {recipes.length} recipes
                 </h2>
-                <div
-                  className="features"
-                  style={{ gridTemplateColumns: "repeat(3, 1fr)" }}
-                >
+                <div className="features">
                   {recipes.map((recipe, index) => (
                     <motion.div
-                      key={recipe.id} // ✅ CHANGED: Use recipe.id instead of index
+                      key={index} // Use index as key since generated recipes may not have id
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: index * 0.1 }}
                       className="feature-card"
                       style={{ cursor: "pointer", position: "relative" }}
                       whileHover={{ y: -5 }}
+                      onClick={() => {
+                        console.log("Clicked recipe:", recipe);
+                        // Store full recipe in sessionStorage, use index as temp key
+                        sessionStorage.setItem(
+                          `preview_recipe_${index}`,
+                          JSON.stringify(recipe),
+                        );
+                        const url = recipe._id
+                          ? `/recipe/${recipe._id}` // saved recipe → fetch from DB
+                          : `/recipe/preview?index=${index}`; // unsaved → read from sessionStorage
+                        console.log("Navigating to:", url);
+                        router.push(url);
+                      }}
                     >
                       {/* Like Button */}
                       <div
@@ -321,7 +354,17 @@ export default function DashboardPage() {
                           prepTime={recipe.prepTime}
                           difficulty={recipe.difficulty}
                           instructions={recipe.instructions}
-                        />{" "}
+                          onSave={(newRecipeId) => {
+                            // Update the recipe's _id when it's saved
+                            setRecipes((prevRecipes) =>
+                              prevRecipes.map((r) =>
+                                r.id === recipe.id
+                                  ? { ...r, _id: newRecipeId }
+                                  : r,
+                              ),
+                            );
+                          }}
+                        />
                         {/* ✅ ADDED: Pass recipe ID */}
                       </div>
 

@@ -11,6 +11,7 @@ export const LikeComponent = ({
   instructions,
   isInitiallySaved = false,
   onUnsave,
+  onSave,
 }: {
   recipeId: string;
   recipeName: string;
@@ -20,9 +21,11 @@ export const LikeComponent = ({
   instructions: Array<string>;
   isInitiallySaved?: boolean;
   onUnsave?: () => void;
+  onSave?: (newRecipeId: string) => void;
 }) => {
   const [active, setActive] = useState(isInitiallySaved);
   const [isLoading, setIsLoading] = useState(false);
+  const [currentRecipeId, setCurrentRecipeId] = useState(recipeId);
 
   const handleToggle = async () => {
     if (isLoading) return; // Prevent multiple clicks
@@ -33,7 +36,7 @@ export const LikeComponent = ({
       if (active) {
         // Unsave: call delete API
         const res = await fetch(
-          `http://localhost:5001/api/delete/${recipeId}`,
+          `${process.env.NEXT_PUBLIC_API_URL}/api/delete/${currentRecipeId}`,
           {
             method: "DELETE",
             credentials: "include",
@@ -46,17 +49,17 @@ export const LikeComponent = ({
         }
 
         console.log("Recipe unsaved");
+        setActive(false);
         onUnsave?.(); // Call callback to remove from list
       } else {
         // Save: call save API
-        const res = await fetch("http://localhost:5001/api/save", {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/save`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
           credentials: "include",
           body: JSON.stringify({
-            recipeId,
             recipeName,
             ingredients,
             prepTime,
@@ -72,9 +75,15 @@ export const LikeComponent = ({
 
         const data = await res.json();
         console.log("Recipe saved:", data);
-      }
 
-      setActive(!active); // Toggle heart
+        // Update the recipeId with the new one from the response
+        if (data.recipeId) {
+          setCurrentRecipeId(data.recipeId);
+          onSave?.(data.recipeId);
+        }
+
+        setActive(true);
+      }
     } catch (error) {
       console.error("Error toggling save:", error);
       alert("Failed to toggle save. Please try again.");

@@ -346,7 +346,51 @@ export default function HomePage() {
         {/* Footer */}
         <footer className="footer">
           <p className="footer-text">
-            Made with <span>♥</span> and lots of garlic · FridgeChef © 2026
+            Made with{" "}
+            <span
+              style={{
+                position: "relative",
+                display: "inline-block",
+                cursor: "default",
+              }}
+              onMouseEnter={(e) => {
+                const tip = e.currentTarget.querySelector(
+                  ".easter-tip",
+                ) as HTMLElement;
+                if (tip) tip.style.opacity = "1";
+              }}
+              onMouseLeave={(e) => {
+                const tip = e.currentTarget.querySelector(
+                  ".easter-tip",
+                ) as HTMLElement;
+                if (tip) tip.style.opacity = "0";
+              }}
+            >
+              ♥
+              <span
+                className="easter-tip"
+                style={{
+                  position: "absolute",
+                  bottom: "130%",
+                  left: "50%",
+                  transform: "translateX(-50%)",
+                  background: "#2c1a0e",
+                  color: "#f9c74f",
+                  fontSize: "0.65rem",
+                  fontWeight: 600,
+                  padding: "3px 8px",
+                  borderRadius: "6px",
+                  whiteSpace: "nowrap",
+                  opacity: 0,
+                  pointerEvents: "none",
+                  transition: "opacity 0.2s ease",
+                  letterSpacing: "0.03em",
+                }}
+              >
+                🥚 This heart is for Ninni!
+              </span>
+            </span>{" "}
+            and lots of garlic · FridgeChef © 2026
           </p>
         </footer>
       </div>

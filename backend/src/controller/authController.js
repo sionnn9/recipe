@@ -58,8 +58,8 @@ export async function loginUser(req, res) {
     );
     res.cookie("token", token, {
       httpOnly: true,
-      secure: false, // localhost not HTTPS
-      sameSite: "lax", // ✅ works locally
+      secure: process.env.NODE_ENV === "production", // ✅ true in prod, false locally
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax", // ✅ "none" required for cross-site cookies
       maxAge: 24 * 60 * 60 * 1000,
     });
     return res.status(200).json({ message: "Login successful", token });
@@ -80,8 +80,8 @@ export async function logincheck(req, res) {
 export async function logoutUser(req, res) {
   res.clearCookie("token", {
     httpOnly: true,
-    secure: false,
-    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
   });
   res.status(200).json({ message: "Logout successful" });
 }

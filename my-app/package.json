@@ -12,7 +12,7 @@
     "@react-sandbox/heart": "^1.1.0",
     "framer-motion": "^12.34.3",
     "lucide-react": "^0.575.0",
-    "next": "^14.2.35",
+    "next": "^15.3.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-dropzone": "^15.0.0",
@@ -24,7 +24,7 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
-    "eslint-config-next": "16.1.6",
+    "eslint-config-next": "^15.3.0",
     "tailwindcss": "^4",
     "typescript": "^5"
   }

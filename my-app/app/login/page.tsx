@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import "../components/login.css";
+import GoogleLogin from "../components/googlelog/page";
 
 import VeggieBackground from "../components/floatingVeggies";
 type FormMode = "login" | "register";
@@ -237,7 +238,7 @@ export default function AuthPage() {
                 )}
               </button>
             </form>
-
+            <GoogleLogin />
             <div className="toggle-btn">
               {isLogin ? "New here? " : "Already a chef? "}
               <button type="button" onClick={handleFlip}>

@@ -1,13 +1,15 @@
+import dotenv from "dotenv";
+dotenv.config();
 import express from "express";
 import { connectDB } from "./config/db.js";
 import authRoutes from "./routes/authRoutes.js";
 import uploadRoute from "./routes/uploadRoute.js";
-import dotenv from "dotenv";
 import multer from "multer";
 import saveRecipieRoute from "./routes/saveRecipieRoute.js";
 import cookieParser from "cookie-parser";
 import cors from "cors";
-dotenv.config();
+import passport from "passport";
+import "./config/passport.js";
 const app = express();
 const PORT = process.env.Port || 5001;
 
@@ -20,6 +22,8 @@ app.use(
 );
 app.use(express.json());
 app.use(cookieParser());
+app.use(passport.initialize());
+
 app.use((req, res, next) => {
   console.log(`req method ${req.method} and url is ${req.url}`);
   next();
